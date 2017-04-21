@@ -36,7 +36,5 @@ dependencies {
     annotationProcessor 'com.walfud:dustofappearance-processor:1.0.0'
     compile 'com.walfud:flowimageloader:2.0.0'
 
-    compile 'com.jakewharton:butterknife:8.5.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     compile 'com.f2prateek.rx.preferences2:rx-preferences:2.0.0-RC1'
 }

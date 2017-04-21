@@ -10,12 +10,11 @@ import android.widget.TextView;
 import com.walfud.contactsync_android.R;
 import com.walfud.dustofappearance.DustOfAppearance;
 import com.walfud.dustofappearance.annotation.FindView;
+import com.walfud.dustofappearance.annotation.OnClick;
 
 import java.util.List;
 
 import javax.inject.Inject;
-
-import butterknife.OnClick;
 
 public class MainActivity extends Activity implements MainView {
 
@@ -42,8 +41,8 @@ public class MainActivity extends Activity implements MainView {
         DustOfAppearance.inject(this);
     }
 
-    @OnClick(R.id.btn_sync)
-    public void onClickSync(View view) {
+    @OnClick
+    public void onClickSyncBtn(View view) {
         mPresenter.onSync();
     }
 
