@@ -18,8 +18,13 @@ public class MainPresenterImpl implements MainPresenter {
 
     @Override
     public void onSync() {
-        if (mUserService.isLogin()) {
-
+        if (!mUserService.isLogin()) {
+            mMainView.login();
         }
+
+        mMainView.loading();
     }
+
+    //
+
 }

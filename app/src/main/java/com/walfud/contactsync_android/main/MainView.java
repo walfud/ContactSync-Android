@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface MainView {
     void login();
-    void show(boolean isLogin, List<ContactData> dataList);
+    void show(boolean isLogin, List<ContactModel> dataList);
     void loading();
 
     class ViewContactData {
@@ -17,7 +17,7 @@ public interface MainView {
         public static final int STATUS_SYNC = 1;
         public static final int STATUS_CHANGED = 0;
 
-        public ContactData contactData;
+        public ContactModel contactModel;
         public int status;
     }
 }

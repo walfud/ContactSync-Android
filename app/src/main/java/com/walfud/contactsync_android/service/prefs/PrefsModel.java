@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Shared Preference Data
  */
-public class PrefsData {
+public class PrefsModel {
 
     public static final String PREFS_VERSION = "PREFS_VERSION";
     public int prefsVersion;

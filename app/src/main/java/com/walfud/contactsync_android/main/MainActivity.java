@@ -54,7 +54,7 @@ public class MainActivity extends Activity implements MainView {
     }
 
     @Override
-    public void show(boolean isLogin, List<ContactData> dataList) {
+    public void show(boolean isLogin, List<ContactModel> dataList) {
 
     }
 
