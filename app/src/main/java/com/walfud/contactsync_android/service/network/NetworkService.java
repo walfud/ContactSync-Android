@@ -39,12 +39,12 @@ public class NetworkService {
                 .client(mOkHttpClient)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
-                .baseUrl("http://walfud.com/")
+                .baseUrl("http://contactsync.walfud.com/")
                 .build();
         mNetworkInterface = retrofit.create(NetworkInterface.class);
 
         mApolloClient = ApolloClient.builder()
-                .serverUrl("http://192.168.106.101:51955/graphql")
+                .serverUrl("http://192.168.106.101:51955/graphql")      // DEBUG
                 .okHttpClient(mOkHttpClient)
                 .build();
     }

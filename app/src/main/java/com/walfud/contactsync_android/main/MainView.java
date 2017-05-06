@@ -1,5 +1,9 @@
 package com.walfud.contactsync_android.main;
 
+import android.text.TextUtils;
+
+import com.walfud.contactsync_android.ContactsQuery;
+
 import java.util.List;
 
 /**
@@ -8,7 +12,7 @@ import java.util.List;
 
 public interface MainView {
     void login();
-    void show(boolean isLogin, List<ContactModel> dataList);
+    void show(List<ViewContactData> dataList);
     void loading(boolean show);
 
     class ViewContactData {
@@ -17,7 +21,17 @@ public interface MainView {
         public static final int STATUS_SYNC = 1;
         public static final int STATUS_CHANGED = 0;
 
-        public ContactModel contactModel;
+        public String name;
+        public String phone;
         public int status;
+
+        public static ViewContactData valueOf(ContactsQuery.Data.Contact contact) {
+            ViewContactData contactModel = new ViewContactData();
+            contactModel.name = contact.name();
+            contactModel.phone = contact.phone();
+            contactModel.status = TextUtils.isEmpty(contact.id()) ? STATUS_LOCAL : STATUS_SYNC;
+
+            return contactModel;
+        }
     }
 }

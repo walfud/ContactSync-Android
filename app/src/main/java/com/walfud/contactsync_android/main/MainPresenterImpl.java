@@ -1,6 +1,5 @@
 package com.walfud.contactsync_android.main;
 
-import com.walfud.contactsync_android.ContactsQuery;
 import com.walfud.contactsync_android.service.network.NetworkService;
 import com.walfud.contactsync_android.service.user.UserService;
 
@@ -28,24 +27,18 @@ public class MainPresenterImpl implements MainPresenter {
 
     @Override
     public void onSync() {
-        if (!mUserService.isLogin()) {
-            mMainView.login();
-            return;
-        }
-
         mNetworkService.getContacts(mUserService.getToken())
-                .subscribe(new SingleObserver<ContactsQuery.Data>() {
+                .map(data -> data.contacts().stream().map(MainView.ViewContactData::valueOf).collect(Collectors.toList()))
+                .subscribe(new SingleObserver<List<MainView.ViewContactData>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                         mMainView.loading(true);
                     }
 
                     @Override
-                    public void onSuccess(ContactsQuery.Data data) {
+                    public void onSuccess(List<MainView.ViewContactData> contactDataList) {
                         mMainView.loading(false);
-
-                        List<ContactModel> contactModelList = data.contacts().stream().map(ContactModel::valueOf).collect(Collectors.toList());
-                        mMainView.show(true, contactModelList);
+                        mMainView.show(contactDataList);
                     }
 
                     @Override
