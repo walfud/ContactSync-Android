@@ -5,12 +5,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.f2prateek.rx.preferences2.RxSharedPreferences;
-import com.walfud.walle.collection.CollectionUtils;
-import com.walfud.walle.lang.ObjectUtils;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Predicate;
 
 /**
  * Created by walfud on 2017/4/20.
@@ -51,21 +47,15 @@ public class PrefsService {
     }
 
     public PrefsModel.UserPrefsData getUserPrefs(String userId) {
-        PrefsModel.UserPrefsData userPrefsData = CollectionUtils.find(mPrefsModel.map.values(), (Predicate<PrefsModel.UserPrefsData>) userPrefsData1 -> ObjectUtils.isEqual(userPrefsData1.userId, userId));
+        PrefsModel.UserPrefsData userPrefsData = mPrefsModel.map.get(userId);
         if (userPrefsData == null) {
-            userPrefsData = mRxSharedPreferences.getObject(PrefsModel.PREFS_USER_POINTER, new GsonPreferenceAdapter<>(PrefsModel.UserPrefsData.class)).get();
-            mPrefsModel.map.put(userId, userPrefsData);
+            userPrefsData = mRxSharedPreferences.getObject(userId, new GsonPreferenceAdapter<>(PrefsModel.UserPrefsData.class)).get();
         }
 
         return userPrefsData;
     }
     public void setUserPrefs(String userId, PrefsModel.UserPrefsData newUserPrefsData) {
-        for (Map.Entry<String, PrefsModel.UserPrefsData> pointer_userPrefsData : mPrefsModel.map.entrySet()) {
-            if (ObjectUtils.isEqual(pointer_userPrefsData.getValue().userId, userId)) {
-                pointer_userPrefsData.setValue(newUserPrefsData);
-                mRxSharedPreferences.getObject(PrefsModel.PREFS_USER_POINTER, new GsonPreferenceAdapter<>(PrefsModel.UserPrefsData.class)).set(newUserPrefsData);
-                break;
-            }
-        }
+        mPrefsModel.map.put(userId, newUserPrefsData);
+        mRxSharedPreferences.getObject(userId, new GsonPreferenceAdapter<>(PrefsModel.UserPrefsData.class)).set(newUserPrefsData);
     }
 }

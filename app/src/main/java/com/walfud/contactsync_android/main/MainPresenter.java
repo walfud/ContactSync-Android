@@ -6,5 +6,4 @@ package com.walfud.contactsync_android.main;
 
 public interface MainPresenter {
     void onSync();
-
 }

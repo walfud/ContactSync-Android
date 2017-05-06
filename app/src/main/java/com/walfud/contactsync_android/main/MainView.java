@@ -9,7 +9,7 @@ import java.util.List;
 public interface MainView {
     void login();
     void show(boolean isLogin, List<ContactModel> dataList);
-    void loading();
+    void loading(boolean show);
 
     class ViewContactData {
         public static final int STATUS_DEFAULT = 0;
