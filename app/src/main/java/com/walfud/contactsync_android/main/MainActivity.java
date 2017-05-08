@@ -52,6 +52,8 @@ public class MainActivity extends BaseActivity implements MainView {
         mPresenter = new MainPresenterImpl(this, ContactSyncApplication.userService, ContactSyncApplication.networkService);
         mContactRv.setLayoutManager(new LinearLayoutManager(this));
         mContactRv.setAdapter(mAdapter = new Adapter());
+
+        mContactRv.post(() -> mPresenter.onRefresh());
     }
 
     @OnClick
@@ -114,8 +116,9 @@ public class MainActivity extends BaseActivity implements MainView {
         public void onBindViewHolder(ViewHolder holder, int position) {
             ViewContactData viewContactData = mDataList.get(position);
             // TODO: holder.mIv
+            holder.mIv.setImageResource(R.mipmap.ic_launcher_round);
             holder.mNameTv.setText(viewContactData.name);
-            holder.mPhoneTv.setText(viewContactData.phone);
+            holder.mPhoneTv.setText(viewContactData.phoneList.stream().reduce((s, s2) -> s + "/" + s2).orElse(null));
         }
 
         @Override
