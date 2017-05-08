@@ -37,10 +37,13 @@ public class MainPresenterImpl implements MainPresenter {
     @Override
     public void onRefresh() {
         List<MainView.ViewContactData> local = ContactService.getContactList().stream()
+                .filter(contactModel -> !contactModel.isDeleted)
                 .map(contactModel -> {
                     MainView.ViewContactData viewContactData = new MainView.ViewContactData();
                     viewContactData.name = contactModel.displayName;
-                    viewContactData.phoneList = contactModel.phoneList.stream().map(phoneModel -> phoneModel.number).collect(Collectors.toList());
+                    viewContactData.phoneList = contactModel.phoneList.stream()
+                            .map(phoneModel -> phoneModel.number)
+                            .collect(Collectors.toList());
 
                     return viewContactData;
                 })
