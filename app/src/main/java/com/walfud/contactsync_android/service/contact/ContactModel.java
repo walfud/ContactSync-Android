@@ -8,8 +8,10 @@ import java.util.List;
  */
 
 public class ContactModel {
-    public boolean isDeleted;
+    public long id;
     public String displayName;
+    public boolean isDeleted;
+    public long modifyTime;
     public List<PhoneModel> phoneList = new ArrayList<>();
     public List<EmailModel> emailList = new ArrayList<>();
     public List<String> noteList = new ArrayList<>();

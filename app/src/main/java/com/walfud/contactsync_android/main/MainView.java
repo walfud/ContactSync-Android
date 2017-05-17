@@ -13,6 +13,8 @@ public interface MainView {
 
     void loading(boolean show);
 
+    void error(String err);
+
     class ViewContactData {
         public static final int STATUS_DEFAULT = 0;
         public static final int STATUS_LOCAL_ONLY = 1;

@@ -4,8 +4,10 @@ import android.content.Context;
 
 import com.apollographql.android.rx2.Rx2Apollo;
 import com.apollographql.apollo.ApolloClient;
-import com.walfud.contactsync_android.ContactsQuery;
+import com.walfud.contactsync_android.SyncMutation;
+import com.walfud.contactsync_android.type.ContactInputType;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Single;
@@ -44,16 +46,17 @@ public class NetworkService {
         mNetworkInterface = retrofit.create(NetworkInterface.class);
 
         mApolloClient = ApolloClient.builder()
-                .serverUrl("http://192.168.106.101:51955/graphql")      // DEBUG
+                .serverUrl("http://localhost:51955/graphql")      // DEBUG
                 .okHttpClient(mOkHttpClient)
                 .build();
     }
 
-    public Single<ContactsQuery.Data> getContacts(String token) {
+    public Single<SyncMutation.Data> sync(String token, List<ContactInputType> contactList) {
         return Rx2Apollo.from(mApolloClient.newCall(
-                ContactsQuery.builder()
-                .token(token)
-                .build()
+                SyncMutation.builder()
+                        .token(token)
+                        .contacts(contactList)
+                        .build()
         ))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());

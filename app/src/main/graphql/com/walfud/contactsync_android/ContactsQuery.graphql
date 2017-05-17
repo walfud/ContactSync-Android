@@ -1,7 +1,0 @@
-query ContactsQuery($token: String!) {
-  contacts(token: $token) {
-    id
-    name
-    phones
-  }
-}

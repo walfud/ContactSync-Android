@@ -10,10 +10,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.walfud.contactsync_android.BaseActivity;
 import com.walfud.contactsync_android.ContactSyncApplication;
 import com.walfud.contactsync_android.R;
+import com.walfud.contactsync_android.model.ContactRealm;
 import com.walfud.contactsync_android.ui.OkCancelDialog;
 import com.walfud.dustofappearance.DustOfAppearance;
 import com.walfud.dustofappearance.annotation.FindView;
@@ -23,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import io.realm.Realm;
 
 public class MainActivity extends BaseActivity implements MainView {
 
@@ -48,12 +52,71 @@ public class MainActivity extends BaseActivity implements MainView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         DustOfAppearance.inject(this);
-
         mPresenter = new MainPresenterImpl(this, ContactSyncApplication.userService, ContactSyncApplication.networkService);
         mContactRv.setLayoutManager(new LinearLayoutManager(this));
         mContactRv.setAdapter(mAdapter = new Adapter());
 
         mContactRv.post(() -> mPresenter.onRefresh());
+
+        findViewById(R.id.btn_sync).setOnLongClickListener(v -> {
+            Realm realm = Realm.getDefaultInstance();
+            realm.beginTransaction();
+            realm.deleteAll();
+            realm.createAllFromJson(ContactRealm.class, "[\n" +
+                    "    {\n" +
+                    "        \"name\": \"a\",\n" +
+                    "        \"phoneRealmList\": [\n" +
+                    "            {\n" +
+                    "                \"num\": 1\n" +
+                    "            }\n" +
+                    "        ],\n" +
+                    "        \"modifyTime\": 1494474854000,\n" +
+                    "        \"isDeleted\": false\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"name\": \"a2\",\n" +
+                    "        \"phoneRealmList\": [\n" +
+                    "            {\n" +
+                    "                \"num\": 1222\n" +
+                    "            }\n" +
+                    "        ],\n" +
+                    "        \"modifyTime\": 1494474854000,\n" +
+                    "        \"isDeleted\": false\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"id\": \"b\",\n" +
+                    "        \"localId\": 3,\n" +
+                    "        \"name\": \"b\",\n" +
+                    "        \"phoneRealmList\": [\n" +
+                    "            {\n" +
+                    "                \"num\": 2\n" +
+                    "            },\n" +
+                    "            {\n" +
+                    "                \"num\": 2222\n" +
+                    "            }\n" +
+                    "        ],\n" +
+                    "        \"modifyTime\": 1494474854000,\n" +
+                    "        \"isDeleted\": false\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"id\": \"c\",\n" +
+                    "        \"localId\": 4,\n" +
+                    "        \"name\": \"c\",\n" +
+                    "        \"phoneRealmList\": [\n" +
+                    "            {\n" +
+                    "                \"num\": 3\n" +
+                    "            }\n" +
+                    "        ],\n" +
+                    "        \"modifyTime\": 1494474854000,\n" +
+                    "        \"isDeleted\": true\n" +
+                    "    }\n" +
+                    "]");
+            realm.commitTransaction();
+
+            Toast.makeText(this, "reset", Toast.LENGTH_SHORT).show();
+
+            return true;
+        });
     }
 
     @OnClick
@@ -86,6 +149,11 @@ public class MainActivity extends BaseActivity implements MainView {
         } else {
             mLoadingDialog.dismiss();
         }
+    }
+
+    @Override
+    public void error(String err) {
+        Toast.makeText(this, err, Toast.LENGTH_SHORT).show();
     }
 
     //

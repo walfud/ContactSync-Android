@@ -1,20 +1,23 @@
 package com.walfud.contactsync_android.main;
 
-import com.walfud.contactsync_android.ContactsQuery;
+import android.util.Log;
+
+import com.walfud.contactsync_android.ContactSyncApplication;
+import com.walfud.contactsync_android.SyncMutation;
+import com.walfud.contactsync_android.model.ContactRealm;
 import com.walfud.contactsync_android.service.contact.ContactModel;
 import com.walfud.contactsync_android.service.contact.ContactService;
 import com.walfud.contactsync_android.service.network.NetworkService;
 import com.walfud.contactsync_android.service.user.UserService;
-import com.walfud.walle.collection.CollectionUtils;
+import com.walfud.contactsync_android.type.ContactInputType;
 import com.walfud.walle.lang.ObjectUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;
+import io.realm.Realm;
 
 /**
  * Created by walfud on 2017/4/20.
@@ -36,14 +39,29 @@ public class MainPresenterImpl implements MainPresenter {
 
     @Override
     public void onRefresh() {
-        List<MainView.ViewContactData> local = ContactService.getContactList().stream()
-                .filter(contactModel -> !contactModel.isDeleted)
+        List<MainView.ViewContactData> local = ContactService.getContactList(ContactSyncApplication.getAppContext()).stream()
                 .map(contactModel -> {
+                    Realm realm = Realm.getDefaultInstance();
+                    ContactRealm contactRealm = realm.where(ContactRealm.class)
+                            .equalTo("localId", contactModel.id)
+                            .findFirst();
+
                     MainView.ViewContactData viewContactData = new MainView.ViewContactData();
-                    viewContactData.name = contactModel.displayName;
-                    viewContactData.phoneList = contactModel.phoneList.stream()
-                            .map(phoneModel -> phoneModel.number)
-                            .collect(Collectors.toList());
+                    if (contactRealm == null) {
+                        // New contact
+                        viewContactData.name = contactModel.displayName;
+                        viewContactData.phoneList = contactModel.phoneList.stream()
+                                .map(phoneModel -> phoneModel.number)
+                                .collect(Collectors.toList());
+                        viewContactData.status = MainView.ViewContactData.STATUS_LOCAL_ONLY;
+                    } else {
+                        // TODO: show difference
+                        viewContactData.name = contactModel.displayName;
+                        viewContactData.phoneList = contactModel.phoneList.stream()
+                                .map(phoneModel -> phoneModel.number)
+                                .collect(Collectors.toList());
+                        viewContactData.status = MainView.ViewContactData.STATUS_CHANGED;
+                    }
 
                     return viewContactData;
                 })
@@ -53,57 +71,77 @@ public class MainPresenterImpl implements MainPresenter {
 
     @Override
     public void onSync() {
-        mNetworkService.getContacts(mUserService.getToken())
-                .map(remoteData -> {
-                    List<MainView.ViewContactData> viewContactDataList = new ArrayList<>();
+        List<ContactModel> clientContactList = ContactService.getContactList(ContactSyncApplication.getAppContext());
+        mNetworkService.sync(mUserService.getToken(), clientContactList.stream()
+                .map(contactModel -> {
+                    Realm realm = Realm.getDefaultInstance();
+                    ContactRealm contactRealm = realm.where(ContactRealm.class)
+                            .equalTo("localId", contactModel.id)
+                            .findFirst();
 
-                    List<ContactModel> contactList = ContactService.getContactList();
-                    List<ContactModel> localOnly = contactList.stream()
-                            .filter(contact -> searchRemote(contact, remoteData.contacts()) == null)
-                            .collect(Collectors.toList());
+                    ContactInputType.Builder contactBuilder = ContactInputType.builder();
+                    if (contactRealm != null) {
+                        contactBuilder.id(contactRealm.id);
+                    }
+                    contactBuilder.name(contactModel.displayName)
+                            .phones(contactModel.phoneList.stream()
+                                    .map(phoneModel -> phoneModel.number)
+                                    .collect(Collectors.toList()))
+                            //                    .modify_time(contactModel.modifyTime)
+                            .modify_time(1494474854000L)     // DEBUG
+                            .is_deleted(contactModel.isDeleted);
 
-                    return viewContactDataList;
+                    return contactBuilder.build();
                 })
-//                .map(data -> data.contacts().stream().map(MainView.ViewContactData::valueOf).collect(Collectors.toList()))
-                .subscribe(new SingleObserver<List<MainView.ViewContactData>>() {
+                .collect(Collectors.toList()))
+                .subscribe(new SingleObserver<SyncMutation.Data>() {
                     @Override
                     public void onSubscribe(Disposable d) {
-                        mMainView.loading(true);
+
                     }
 
                     @Override
-                    public void onSuccess(List<MainView.ViewContactData> contactDataList) {
-                        mMainView.loading(false);
-                        mMainView.show(contactDataList);
+                    public void onSuccess(SyncMutation.Data data) {
+                        List<SyncMutation.Data.Contact> serverContactList = data.sync().contacts();
+                        if (serverContactList.size() < clientContactList.size()) {
+                            throw new RuntimeException("server response error");
+                        }
+
+                        //
+                        Realm realm = Realm.getDefaultInstance();
+                        realm.beginTransaction();
+                        realm.deleteAll();
+                        for (int i = 0; i < serverContactList.size(); i++) {
+                            SyncMutation.Data.Contact serverContact = serverContactList.get(i);
+                            if (i < clientContactList.size()) {
+                                // Client vs. Server
+                                ContactModel clientContact = clientContactList.get(i);
+                                if (!ObjectUtils.isEqual(clientContact.displayName, serverContact.name())
+                                        || !ObjectUtils.isEqual(clientContact.phoneList, serverContact.phones(), (clientPhone, serverPhone) -> ObjectUtils.isEqual(clientPhone.number, serverPhone) ? 0 : -1)
+                                        || clientContact.isDeleted != serverContact.is_deleted()) {
+                                    if (!serverContact.is_deleted()) {
+                                        ContactService.update(ContactSyncApplication.getAppContext(), clientContact.id, serverContact.name(), serverContact.phones());
+                                        Log.d(TAG, String.format("add: %10s, %s", serverContact.name(), serverContact.phones().toString()));
+
+                                    } else {
+                                        ContactService.delete(ContactSyncApplication.getAppContext(), clientContact.id);
+                                        Log.d(TAG, String.format("add: %10s, %d", serverContact.name(), clientContact.id));
+                                    }
+                                }
+                            } else {
+                                // Only Server
+                                ContactService.insert(ContactSyncApplication.getAppContext(), serverContact.name(), serverContact.phones());
+                                Log.d(TAG, String.format("add: %10s, %s", serverContact.name(), serverContact.phones().toString()));
+                            }
+                            realm.copyToRealm(ContactRealm.valueOf(realm, serverContact));
+                        }
+                        realm.commitTransaction();
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        mMainView.loading(false);
+                        mMainView.error(e.getMessage());
                     }
                 });
     }
-
-    //
-    private ContactsQuery.Data.Contact searchRemote(ContactModel contact, List<ContactsQuery.Data.Contact> remoteContactList) {
-        return CollectionUtils.find(remoteContactList, (Predicate<ContactsQuery.Data.Contact>) remoteContact -> {
-            if (!ObjectUtils.isEqual(remoteContact.name(), contact.displayName)) {
-                return false;
-            }
-            if (remoteContact.phones().size() != contact.phoneList.size()) {
-                return false;
-            } else {
-                for (int i = 0; i < remoteContact.phones().size(); i++) {
-                    String remotePhone = remoteContact.phones().get(i);
-                    String phone = contact.phoneList.get(i).number;
-                    if (!ObjectUtils.isEqual(remotePhone, phone)) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        });
-    }
-
 }

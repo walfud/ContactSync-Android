@@ -3,6 +3,7 @@ plugins {
 }
 apply plugin: 'com.android.application'
 apply plugin: 'com.apollographql.android'
+apply plugin: 'realm-android'
 
 
 android {
