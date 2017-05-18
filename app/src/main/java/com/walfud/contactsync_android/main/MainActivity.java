@@ -1,6 +1,7 @@
 package com.walfud.contactsync_android.main;
 
 import android.app.DialogFragment;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,10 +17,13 @@ import com.walfud.contactsync_android.BaseActivity;
 import com.walfud.contactsync_android.ContactSyncApplication;
 import com.walfud.contactsync_android.R;
 import com.walfud.contactsync_android.model.ContactRealm;
+import com.walfud.contactsync_android.service.contact.ContactModel;
+import com.walfud.contactsync_android.service.contact.ContactService;
 import com.walfud.contactsync_android.ui.OkCancelDialog;
 import com.walfud.dustofappearance.DustOfAppearance;
 import com.walfud.dustofappearance.annotation.FindView;
 import com.walfud.dustofappearance.annotation.OnClick;
+import com.walfud.walle.collection.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,33 +63,29 @@ public class MainActivity extends BaseActivity implements MainView {
         mContactRv.post(() -> mPresenter.onRefresh());
 
         findViewById(R.id.btn_sync).setOnLongClickListener(v -> {
+            for (int i = 0; i < 100; i++) {
+                getContentResolver().delete(Uri.parse("content://com.android.contacts/contacts/" + i), null, null);
+                getContentResolver().delete(Uri.parse("content://com.android.contacts/raw_contacts/" + i), null, null);
+                getContentResolver().delete(Uri.parse("content://com.android.contacts/data/" + i), null, null);
+            }
+            ContactService.insert(this, "a", CollectionUtils.newArrayList("1"));
+            ContactService.insert(this, "a2", CollectionUtils.newArrayList("1222"));
+            ContactService.insert(this, "b", CollectionUtils.newArrayList("2", "22"));
+            ContactService.insert(this, "c", CollectionUtils.newArrayList("3"));
+            ContactService.insert(this, "y", CollectionUtils.newArrayList("8", "88"));
+            ContactService.insert(this, "z", CollectionUtils.newArrayList("9"));
+            List<ContactModel> z = ContactService.getContactList(MainActivity.this);
+
+            ContactService.delete(this, z.get(3).id);
+
+
             Realm realm = Realm.getDefaultInstance();
             realm.beginTransaction();
             realm.deleteAll();
             realm.createAllFromJson(ContactRealm.class, "[\n" +
                     "    {\n" +
-                    "        \"name\": \"a\",\n" +
-                    "        \"phoneRealmList\": [\n" +
-                    "            {\n" +
-                    "                \"num\": 1\n" +
-                    "            }\n" +
-                    "        ],\n" +
-                    "        \"modifyTime\": 1494474854000,\n" +
-                    "        \"isDeleted\": false\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"name\": \"a2\",\n" +
-                    "        \"phoneRealmList\": [\n" +
-                    "            {\n" +
-                    "                \"num\": 1222\n" +
-                    "            }\n" +
-                    "        ],\n" +
-                    "        \"modifyTime\": 1494474854000,\n" +
-                    "        \"isDeleted\": false\n" +
-                    "    },\n" +
-                    "    {\n" +
                     "        \"id\": \"b\",\n" +
-                    "        \"localId\": 3,\n" +
+                    "        \"localId\": " + z.get(2).id + ",\n" +
                     "        \"name\": \"b\",\n" +
                     "        \"phoneRealmList\": [\n" +
                     "            {\n" +
@@ -100,7 +100,7 @@ public class MainActivity extends BaseActivity implements MainView {
                     "    },\n" +
                     "    {\n" +
                     "        \"id\": \"c\",\n" +
-                    "        \"localId\": 4,\n" +
+                    "        \"localId\": " + z.get(3).id + ",\n" +
                     "        \"name\": \"c\",\n" +
                     "        \"phoneRealmList\": [\n" +
                     "            {\n" +
@@ -109,6 +109,30 @@ public class MainActivity extends BaseActivity implements MainView {
                     "        ],\n" +
                     "        \"modifyTime\": 1494474854000,\n" +
                     "        \"isDeleted\": true\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"id\": \"y\",\n" +
+                    "        \"localId\": " + z.get(4).id + ",\n" +
+                    "        \"name\": \"y\",\n" +
+                    "        \"phoneRealmList\": [\n" +
+                    "            {\n" +
+                    "                \"num\": 8\n" +
+                    "            }\n" +
+                    "        ],\n" +
+                    "        \"modifyTime\": 1494474854000,\n" +
+                    "        \"isDeleted\": false\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"id\": \"z\",\n" +
+                    "        \"localId\": " + z.get(5).id + ",\n" +
+                    "        \"name\": \"z\",\n" +
+                    "        \"phoneRealmList\": [\n" +
+                    "            {\n" +
+                    "                \"num\": 9\n" +
+                    "            }\n" +
+                    "        ],\n" +
+                    "        \"modifyTime\": 1494474854000,\n" +
+                    "        \"isDeleted\": false\n" +
                     "    }\n" +
                     "]");
             realm.commitTransaction();

@@ -1,6 +1,7 @@
 package com.walfud.contactsync_android.service.contact;
 
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
@@ -145,7 +146,14 @@ public class ContactService {
         return organization;
     }
 
-    public static boolean insert(Context context, String name, List<String> phoneList) {
+    /**
+     *
+     * @param context
+     * @param name
+     * @param phoneList
+     * @return the row id if success, fail is -1
+     */
+    public static long insert(Context context, String name, List<String> phoneList) {
         ArrayList<ContentProviderOperation> allOp = new ArrayList<>();
 
         // raw_contacts: display_name
@@ -168,13 +176,12 @@ public class ContactService {
                 .collect(Collectors.toList()));
 
         try {
-            context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, allOp);
+            ContentProviderResult[] results = context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, allOp);
+            return Long.valueOf(results[0].uri.getLastPathSegment());
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
-
-        return true;
     }
 
     public static boolean delete(Context context, long localId) {

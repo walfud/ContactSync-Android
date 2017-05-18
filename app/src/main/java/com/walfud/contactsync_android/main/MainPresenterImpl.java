@@ -121,19 +121,22 @@ public class MainPresenterImpl implements MainPresenter {
                                         || clientContact.isDeleted != serverContact.is_deleted()) {
                                     if (!serverContact.is_deleted()) {
                                         ContactService.update(ContactSyncApplication.getAppContext(), clientContact.id, serverContact.name(), serverContact.phones());
-                                        Log.d(TAG, String.format("add: %10s, %s", serverContact.name(), serverContact.phones().toString()));
+                                        Log.d(TAG, String.format("modify: %10s, %s", serverContact.name(), serverContact.phones().toString()));
 
                                     } else {
                                         ContactService.delete(ContactSyncApplication.getAppContext(), clientContact.id);
-                                        Log.d(TAG, String.format("add: %10s, %d", serverContact.name(), clientContact.id));
+                                        Log.d(TAG, String.format("del: %10s, %d", serverContact.name(), clientContact.id));
                                     }
                                 }
+                                ContactRealm contactRealm = ContactRealm.valueOf(realm, serverContact);
+                                contactRealm.localId = clientContact.id;
                             } else {
                                 // Only Server
-                                ContactService.insert(ContactSyncApplication.getAppContext(), serverContact.name(), serverContact.phones());
+                                long localId = ContactService.insert(ContactSyncApplication.getAppContext(), serverContact.name(), serverContact.phones());
+                                ContactRealm contactRealm = ContactRealm.valueOf(realm, serverContact);
+                                contactRealm.localId = localId;
                                 Log.d(TAG, String.format("add: %10s, %s", serverContact.name(), serverContact.phones().toString()));
                             }
-                            realm.copyToRealm(ContactRealm.valueOf(realm, serverContact));
                         }
                         realm.commitTransaction();
                     }
