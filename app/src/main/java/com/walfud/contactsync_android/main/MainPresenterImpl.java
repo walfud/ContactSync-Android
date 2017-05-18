@@ -87,8 +87,7 @@ public class MainPresenterImpl implements MainPresenter {
                             .phones(contactModel.phoneList.stream()
                                     .map(phoneModel -> phoneModel.number)
                                     .collect(Collectors.toList()))
-                            //                    .modify_time(contactModel.modifyTime)
-                            .modify_time(1494474854000L)     // DEBUG
+                            .modify_time(contactModel.modifyTime)
                             .is_deleted(contactModel.isDeleted);
 
                     return contactBuilder.build();
