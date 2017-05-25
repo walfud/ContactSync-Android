@@ -38,6 +38,12 @@ public class MainPresenterImpl implements MainPresenter {
     }
 
     @Override
+    public void onLogin(String oid, String accessToken, String refreshToken) {
+        mUserService.changeUser(oid);
+        mUserService.setToken(accessToken);
+    }
+
+    @Override
     public void onRefresh() {
         List<MainView.ViewContactData> local = ContactService.getContactList(ContactSyncApplication.getAppContext()).stream()
                 .map(contactModel -> {

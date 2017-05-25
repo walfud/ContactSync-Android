@@ -3,7 +3,6 @@ package com.walfud.contactsync_android.service.user;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.walfud.contactsync_android.service.prefs.PrefsModel;
 import com.walfud.contactsync_android.service.prefs.PrefsService;
 
 /**
@@ -25,28 +24,14 @@ public class UserService {
     }
 
     public void changeUser(String id) {
-        mPrefs.setUserPointer(id);
+        mPrefs.setOid(id);
     }
 
-    public String getId() {
-        return getUserPrefs().id;
-    }
     public String getToken() {
-        return getUserPrefs().token;
-    }
-    public void setToken(String token) {
-        PrefsModel.UserPrefsData userPrefsData = getUserPrefs();
-        userPrefsData.token = token;
-        mPrefs.setUserPrefs(userPrefsData.id, userPrefsData);
+        return mPrefs.getUserToken();
     }
 
-    //
-    private PrefsModel.UserPrefsData getUserPrefs() {
-//        return ObjectUtils.getOpt(mPrefs.getUserPrefs(mPrefs.getUserPointer()), new PrefsModel.UserPrefsData());
-        // DEBUG
-        PrefsModel.UserPrefsData userPrefsData = new PrefsModel.UserPrefsData();
-        userPrefsData.id = "57d50524-8e96-494d-8305-4bee3bccf62b";
-        userPrefsData.token = "oid1";
-        return userPrefsData;
+    public void setToken(String token) {
+        mPrefs.setUserToken(token);
     }
 }

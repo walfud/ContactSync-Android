@@ -7,8 +7,6 @@ import java.util.List;
  */
 
 public interface MainView {
-    void login();
-
     void show(List<ViewContactData> dataList);
 
     void loading(boolean show);

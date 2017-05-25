@@ -46,7 +46,7 @@ public class NetworkService {
         mNetworkInterface = retrofit.create(NetworkInterface.class);
 
         mApolloClient = ApolloClient.builder()
-                .serverUrl("http://localhost:51955/graphql")      // DEBUG
+                .serverUrl("http://contactsync.walfud.com/graphql")
                 .okHttpClient(mOkHttpClient)
                 .build();
     }

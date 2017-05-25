@@ -5,8 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.f2prateek.rx.preferences2.RxSharedPreferences;
-
-import java.util.HashMap;
+import com.walfud.walle.lang.ObjectUtils;
 
 /**
  * Created by walfud on 2017/4/20.
@@ -14,48 +13,58 @@ import java.util.HashMap;
 
 public class PrefsService {
 
+    private static final String PREFS_VERSION = "PREFS_VERSION";
+    private static final String PREFS_OID = "PREFS_OID";
+
     private Context mContext;
     RxSharedPreferences mRxSharedPreferences;
-    private PrefsModel mPrefsModel;
 
     public PrefsService(Context context) {
         this.mContext = context;
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mRxSharedPreferences = RxSharedPreferences.create(sharedPreferences);
-
-        //
-        mPrefsModel = new PrefsModel();
-        mPrefsModel.prefsVersion = mRxSharedPreferences.getInteger(PrefsModel.PREFS_VERSION).get();
-        mPrefsModel.userPointer = mRxSharedPreferences.getString(PrefsModel.PREFS_USER_POINTER, "").get();
-        mPrefsModel.map = new HashMap<>();
     }
 
+    // Shared
     public int getPrefsVersion() {
-        return mPrefsModel.prefsVersion;
+        return mRxSharedPreferences.getInteger(PREFS_VERSION).get();
     }
     public void setPrefsVersion(int newPrefsVersion) {
-        mPrefsModel.prefsVersion = newPrefsVersion;
-        mRxSharedPreferences.getInteger(PrefsModel.PREFS_VERSION, 1).set(newPrefsVersion);
+        mRxSharedPreferences.getInteger(PREFS_VERSION).set(newPrefsVersion);
     }
 
-    public String getUserPointer() {
-        return mPrefsModel.userPointer;
+    public String getOid() {
+        return ObjectUtils.getOpt(mRxSharedPreferences.getString(PREFS_OID).get(), "00000000-0000-0000-0000-000000000000");
     }
-    public void setUserPointer(String userPointer) {
-        mPrefsModel.userPointer = userPointer;
-        mRxSharedPreferences.getString(PrefsModel.PREFS_USER_POINTER, "").set(userPointer);
+    public void setOid(String oid) {
+        mRxSharedPreferences.getString(PREFS_OID).set(oid);
     }
 
-    public PrefsModel.UserPrefsData getUserPrefs(String userId) {
-        PrefsModel.UserPrefsData userPrefsData = mPrefsModel.map.get(userId);
-        if (userPrefsData == null) {
-            userPrefsData = mRxSharedPreferences.getObject(userId, new GsonPreferenceAdapter<>(PrefsModel.UserPrefsData.class)).get();
+    // User
+    public String getUserToken() {
+        return getUserPrefs(getOid()).token;
+    }
+    public void setUserToken(String token) {
+        String oid = getOid();
+        UserPrefs userPrefs = getUserPrefs(oid);
+        userPrefs.token = token;
+        setUserPrefs(oid, userPrefs);
+    }
+
+    //
+    private UserPrefs getUserPrefs(String oid) {
+        UserPrefs userPrefs = mRxSharedPreferences.getObject(oid, new GsonPreferenceAdapter<>(UserPrefs.class)).get();
+        if (userPrefs == null) {
+            userPrefs = new UserPrefs();
+            setUserPrefs(oid, userPrefs);
         }
-
-        return userPrefsData;
+        return userPrefs;
     }
-    public void setUserPrefs(String userId, PrefsModel.UserPrefsData newUserPrefsData) {
-        mPrefsModel.map.put(userId, newUserPrefsData);
-        mRxSharedPreferences.getObject(userId, new GsonPreferenceAdapter<>(PrefsModel.UserPrefsData.class)).set(newUserPrefsData);
+    private void setUserPrefs(String oid, UserPrefs userPrefs) {
+        mRxSharedPreferences.getObject(oid, new GsonPreferenceAdapter<>(UserPrefs.class)).set(userPrefs);
+    }
+
+    public static class UserPrefs {
+        public String token;
     }
 }

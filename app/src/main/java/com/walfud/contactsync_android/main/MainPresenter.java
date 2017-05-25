@@ -5,6 +5,7 @@ package com.walfud.contactsync_android.main;
  */
 
 public interface MainPresenter {
+    void onLogin(String oid, String accessToken, String refreshToken);
     void onRefresh();
     void onSync();
 }

@@ -1,7 +1,8 @@
 package com.walfud.contactsync_android.main;
 
 import android.app.DialogFragment;
-import android.net.Uri;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,23 +17,19 @@ import android.widget.Toast;
 import com.walfud.contactsync_android.BaseActivity;
 import com.walfud.contactsync_android.ContactSyncApplication;
 import com.walfud.contactsync_android.R;
-import com.walfud.contactsync_android.model.ContactRealm;
-import com.walfud.contactsync_android.service.contact.ContactModel;
-import com.walfud.contactsync_android.service.contact.ContactService;
 import com.walfud.contactsync_android.ui.OkCancelDialog;
 import com.walfud.dustofappearance.DustOfAppearance;
 import com.walfud.dustofappearance.annotation.FindView;
 import com.walfud.dustofappearance.annotation.OnClick;
-import com.walfud.walle.collection.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import io.realm.Realm;
-
 public class MainActivity extends BaseActivity implements MainView {
+
+    private static final int REQUEST_OAUTH2 = 1;
 
     @FindView
     private TextView mUnuploadTv;
@@ -61,103 +58,40 @@ public class MainActivity extends BaseActivity implements MainView {
         mContactRv.setAdapter(mAdapter = new Adapter());
 
         mContactRv.post(() -> mPresenter.onRefresh());
+    }
 
-        findViewById(R.id.btn_sync).setOnLongClickListener(v -> {
-            for (int i = 0; i < 100; i++) {
-                getContentResolver().delete(Uri.parse("content://com.android.contacts/contacts/" + i), null, null);
-                getContentResolver().delete(Uri.parse("content://com.android.contacts/raw_contacts/" + i), null, null);
-                getContentResolver().delete(Uri.parse("content://com.android.contacts/data/" + i), null, null);
-            }
-            ContactService.insert(this, "a", CollectionUtils.newArrayList("1"));
-            ContactService.insert(this, "a2", CollectionUtils.newArrayList("1222"));
-            ContactService.insert(this, "b", CollectionUtils.newArrayList("2", "22"));
-            ContactService.insert(this, "c", CollectionUtils.newArrayList("3"));
-            ContactService.insert(this, "y", CollectionUtils.newArrayList("8", "88"));
-            ContactService.insert(this, "z", CollectionUtils.newArrayList("9"));
-            List<ContactModel> z = ContactService.getContactList(MainActivity.this);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-            ContactService.delete(this, z.get(3).id);
-
-
-            Realm realm = Realm.getDefaultInstance();
-            realm.beginTransaction();
-            realm.deleteAll();
-            realm.createAllFromJson(ContactRealm.class, "[\n" +
-                    "    {\n" +
-                    "        \"id\": \"b\",\n" +
-                    "        \"localId\": " + z.get(2).id + ",\n" +
-                    "        \"name\": \"b\",\n" +
-                    "        \"phoneRealmList\": [\n" +
-                    "            {\n" +
-                    "                \"num\": 2\n" +
-                    "            },\n" +
-                    "            {\n" +
-                    "                \"num\": 2222\n" +
-                    "            }\n" +
-                    "        ],\n" +
-                    "        \"modifyTime\": 1494474854000,\n" +
-                    "        \"isDeleted\": false\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"id\": \"c\",\n" +
-                    "        \"localId\": " + z.get(3).id + ",\n" +
-                    "        \"name\": \"c\",\n" +
-                    "        \"phoneRealmList\": [\n" +
-                    "            {\n" +
-                    "                \"num\": 3\n" +
-                    "            }\n" +
-                    "        ],\n" +
-                    "        \"modifyTime\": 1494474854000,\n" +
-                    "        \"isDeleted\": true\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"id\": \"y\",\n" +
-                    "        \"localId\": " + z.get(4).id + ",\n" +
-                    "        \"name\": \"y\",\n" +
-                    "        \"phoneRealmList\": [\n" +
-                    "            {\n" +
-                    "                \"num\": 8\n" +
-                    "            }\n" +
-                    "        ],\n" +
-                    "        \"modifyTime\": 1494474854000,\n" +
-                    "        \"isDeleted\": false\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"id\": \"z\",\n" +
-                    "        \"localId\": " + z.get(5).id + ",\n" +
-                    "        \"name\": \"z\",\n" +
-                    "        \"phoneRealmList\": [\n" +
-                    "            {\n" +
-                    "                \"num\": 9\n" +
-                    "            }\n" +
-                    "        ],\n" +
-                    "        \"modifyTime\": 1494474854000,\n" +
-                    "        \"isDeleted\": false\n" +
-                    "    }\n" +
-                    "]");
-            realm.commitTransaction();
-
-            Toast.makeText(this, "reset", Toast.LENGTH_SHORT).show();
-
-            return true;
-        });
+        switch (requestCode) {
+            case REQUEST_OAUTH2:
+                if (resultCode == RESULT_OK) {
+                    String oid = data.getStringExtra("EXTRA_OID");
+                    String accessToken = data.getStringExtra("EXTRA_ACCESS_TOKEN");
+                    String refreshToken = data.getStringExtra("EXTRA_REFRESH_TOKEN");
+                    mPresenter.onLogin(oid, accessToken, refreshToken);
+                } else {
+                    String err = data.getStringExtra("EXTRA_ERROR");
+                    Toast.makeText(this, err, Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
     }
 
     @OnClick
     public void onClickSyncBtn(View view) {
         if (!ContactSyncApplication.userService.isLogin()) {
-            login();
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.walfud.oauth2_android", "com.walfud.oauth2_android.MainActivity"));
+            intent.putExtra("EXTRA_CLIENT_ID", "contactsync");
+            startActivityForResult(intent, REQUEST_OAUTH2);
         } else {
             mPresenter.onSync();
         }
     }
 
     //
-
-    @Override
-    public void login() {
-        // TODO: oauth2
-    }
 
     @Override
     public void show(List<ViewContactData> dataList) {
