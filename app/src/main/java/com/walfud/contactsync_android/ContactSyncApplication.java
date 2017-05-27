@@ -46,7 +46,6 @@ public class ContactSyncApplication extends Application {
         return sAppContext;
     }
 
-    // DEBUG
     public static UserService userService;
     public static NetworkService networkService;
 }
