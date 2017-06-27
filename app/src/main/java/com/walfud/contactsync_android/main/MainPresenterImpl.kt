@@ -2,6 +2,8 @@ package com.walfud.contactsync_android.main
 
 import android.util.Log
 import com.walfud.contactsync_android.ContactSyncApplication
+import com.walfud.contactsync_android.main.MainContract.MainPresenter
+import com.walfud.contactsync_android.main.MainContract.MainView
 import com.walfud.contactsync_android.model.ContactRealm
 import com.walfud.contactsync_android.service.contact.ContactService
 import com.walfud.contactsync_android.service.network.NetworkService
@@ -14,11 +16,11 @@ import io.realm.Realm
  * Created by walfud on 2017/4/20.
  */
 
-class MainPresenterImpl(private val mMainView: MainView, private val mUserService: UserService, private val mNetworkService: NetworkService) : MainPresenter {
+class MainPresenterImpl(private val mMainView: MainView) : MainPresenter {
 
     override fun onLogin(oid: String, accessToken: String, refreshToken: String) {
-        mUserService.changeUser(oid)
-        mUserService.token = accessToken
+        UserService.changeUser(oid)
+        UserService.token = accessToken
     }
 
     override fun onRefresh() {
@@ -51,7 +53,7 @@ class MainPresenterImpl(private val mMainView: MainView, private val mUserServic
 
     override fun onSync() {
         val clientContactList = ContactService.getContactList(ContactSyncApplication.appContext!!)
-        val data = mNetworkService.sync(mUserService.token, clientContactList
+        val data = NetworkService.sync(UserService.token, clientContactList
                 .map { contactModel ->
                     val realm = Realm.getDefaultInstance()
                     val contactRealm = realm.where(ContactRealm::class.java)

@@ -1,19 +1,22 @@
 package com.walfud.contactsync_android.service.prefs
 
-import android.content.Context
 import android.preference.PreferenceManager
 import com.f2prateek.rx.preferences2.RxSharedPreferences
+import com.walfud.contactsync_android.appContext
 import com.walfud.walle.lang.ObjectUtils
 
 /**
  * Created by walfud on 2017/4/20.
  */
 
-class PrefsService(private val mContext: Context) {
+private val PREFS_VERSION = "PREFS_VERSION"
+private val PREFS_OID = "PREFS_OID"
+
+object PrefsService {
     internal var mRxSharedPreferences: RxSharedPreferences
 
     init {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext.value)
         mRxSharedPreferences = RxSharedPreferences.create(sharedPreferences)
     }
 
@@ -52,11 +55,5 @@ class PrefsService(private val mContext: Context) {
 
     class UserPrefs {
         var token: String? = null
-    }
-
-    companion object {
-
-        private val PREFS_VERSION = "PREFS_VERSION"
-        private val PREFS_OID = "PREFS_OID"
     }
 }

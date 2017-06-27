@@ -10,16 +10,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import com.walfud.contactsync_android.BaseActivity
-import com.walfud.contactsync_android.ContactSyncApplication
 import com.walfud.contactsync_android.R
+import com.walfud.contactsync_android.main.MainContract.MainPresenter
+import com.walfud.contactsync_android.main.MainContract.MainView
+import com.walfud.contactsync_android.service.user.UserService
 import com.walfud.contactsync_android.ui.OkCancelDialog
 import com.walfud.dustofappearance.DustOfAppearance
 import com.walfud.dustofappearance.annotation.FindView
 import com.walfud.dustofappearance.annotation.OnClick
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
@@ -28,34 +30,19 @@ import java.util.*
 
 class MainActivity : BaseActivity(), MainView {
 
-    @FindView
-    private val mUnuploadTv: TextView? = null
-    @FindView
-    private val mUndownloadTv: TextView? = null
-    @FindView
-    private val mUnsyncTv: TextView? = null
-    @FindView
-    private val mSyncBtn: TextView? = null
-    @FindView
-    private val mSortSp: Spinner? = null
-    @FindView
-    private val mContactRv: RecyclerView? = null
-    private var mAdapter: Adapter? = null
-
-//    @Inject
-    private var mPresenter: MainPresenter? = null
+    lateinit var mPresenter: MainPresenter
+    lateinit private var mAdapter: Adapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        DustOfAppearance.inject(this)
 
-        mPresenter = MainPresenterImpl(this, ContactSyncApplication.userService!!, ContactSyncApplication.networkService!!)
-        mContactRv!!.layoutManager = LinearLayoutManager(this)
+        mPresenter = MainPresenterImpl(this)
+        contactRv.layoutManager = LinearLayoutManager(this)
         mAdapter = Adapter()
-        mContactRv!!.adapter = mAdapter
+        contactRv.adapter = mAdapter
 
-        mContactRv!!.post { mPresenter!!.onRefresh() }
+//        contactRv.post { mPresenter.onRefresh() }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
@@ -66,7 +53,7 @@ class MainActivity : BaseActivity(), MainView {
                 val oid = data.getStringExtra("EXTRA_OID")
                 val accessToken = data.getStringExtra("EXTRA_ACCESS_TOKEN")
                 val refreshToken = data.getStringExtra("EXTRA_REFRESH_TOKEN")
-                mPresenter!!.onLogin(oid, accessToken, refreshToken)
+                mPresenter.onLogin(oid, accessToken, refreshToken)
             } else {
                 val err = data.getStringExtra("EXTRA_ERROR")
                 Toast.makeText(this, err, Toast.LENGTH_SHORT).show()
@@ -76,7 +63,7 @@ class MainActivity : BaseActivity(), MainView {
 
     @OnClick
     fun onClickSyncBtn(view: View) {
-        if (!ContactSyncApplication.userService!!.isLogin) {
+        if (!UserService.isLogin) {
             val intent = Intent()
             intent.component = ComponentName("com.walfud.oauth2_android", "com.walfud.oauth2_android.MainActivity")
             intent.putExtra("EXTRA_CLIENT_ID", "contactsync")
@@ -84,16 +71,15 @@ class MainActivity : BaseActivity(), MainView {
         } else {
             launch(UI) {
                 async(CommonPool) {
-                    mPresenter!!.onSync()
+                    mPresenter.onSync()
                 }
             }
         }
     }
 
     //
-
     override fun show(dataList: List<MainView.ViewContactData>) {
-        mAdapter!!.setData(dataList)
+        mAdapter.setData(dataList)
     }
 
     private val mLoadingDialog = OkCancelDialog()

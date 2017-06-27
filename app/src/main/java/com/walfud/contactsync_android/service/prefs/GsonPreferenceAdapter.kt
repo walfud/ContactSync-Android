@@ -9,7 +9,7 @@ import com.google.gson.Gson
  * Created by walfud on 2017/4/20.
  */
 
-internal class GsonPreferenceAdapter<T>(private val clazz: Class<T>) : Preference.Adapter<T> {
+class GsonPreferenceAdapter<T>(private val clazz: Class<T>) : Preference.Adapter<T> {
     private val gson: Gson = Gson()
 
     override fun get(key: String, preferences: SharedPreferences): T {

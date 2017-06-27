@@ -2,10 +2,6 @@ package com.walfud.contactsync_android
 
 import android.app.Application
 import android.content.Context
-
-import com.walfud.contactsync_android.service.network.NetworkService
-import com.walfud.contactsync_android.service.user.UserService
-
 import io.realm.Realm
 import io.realm.RealmConfiguration
 
@@ -13,14 +9,14 @@ import io.realm.RealmConfiguration
  * Created by walfud on 2017/4/20.
  */
 
+val appContext = lazy { ContactSyncApplication.appContext }
+
 class ContactSyncApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
 
         appContext = applicationContext
-        userService = UserService
-        networkService = NetworkService(this)
 
         initRealm()
     }
@@ -40,8 +36,6 @@ class ContactSyncApplication : Application() {
     }
 
     companion object {
-        var appContext: Context? = null
-        var userService: UserService? = null
-        var networkService: NetworkService? = null
+        lateinit var appContext: Context
     }
 }

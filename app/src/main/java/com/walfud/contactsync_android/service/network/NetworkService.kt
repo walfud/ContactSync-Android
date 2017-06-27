@@ -1,6 +1,5 @@
 package com.walfud.contactsync_android.service.network
 
-import android.content.Context
 import com.apollographql.apollo.ApolloClient
 import com.walfud.contactsync_android.SyncMutation
 import com.walfud.contactsync_android.type.ContactInputType
@@ -15,7 +14,7 @@ import java.util.concurrent.TimeUnit
  * Created by walfud on 2017/4/28.
  */
 
-class NetworkService(context: Context) {
+object NetworkService {
 
     private val mOkHttpClient: OkHttpClient = OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor())
