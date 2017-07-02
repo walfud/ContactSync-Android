@@ -1,7 +1,8 @@
 package com.walfud.contactsync_android.service.network
 
 import com.apollographql.apollo.ApolloClient
-import com.walfud.contactsync_android.SyncMutation
+import com.walfud.contactsync_android.ContactQuery
+import com.walfud.contactsync_android.UploadMutation
 import com.walfud.contactsync_android.type.ContactInputType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -35,10 +36,26 @@ object NetworkService {
             .okHttpClient(mOkHttpClient)
             .build()
 
-    fun sync(token: String, contactList: List<ContactInputType>): SyncMutation.Data {
-        return mApolloClient.newCall(SyncMutation.builder()
+//    fun sync(token: String, contactList: List<ContactInputType>): SyncMutation.Data {
+//        return mApolloClient.newCall(SyncMutation.builder()
+//                .token(token)
+//                .contacts(contactList)
+//                .build())
+//                .execute()
+//                .data()
+//    }
+
+    fun upload(token: String, contactList: List<ContactInputType>): UploadMutation.Data {
+        return mApolloClient.newCall(UploadMutation.builder()
                 .token(token)
                 .contacts(contactList)
+                .build())
+                .execute()
+                .data()
+    }
+    fun download(token: String): ContactQuery.Data {
+        return mApolloClient.newCall(ContactQuery.builder()
+                .token(token)
                 .build())
                 .execute()
                 .data()

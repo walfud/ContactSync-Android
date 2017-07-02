@@ -16,7 +16,7 @@ object PrefsService {
     internal var mRxSharedPreferences: RxSharedPreferences
 
     init {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext.value)
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext)
         mRxSharedPreferences = RxSharedPreferences.create(sharedPreferences)
     }
 
@@ -30,8 +30,13 @@ object PrefsService {
         set(oid) = mRxSharedPreferences.getString(PREFS_OID).set(oid)
 
     // User
-    var userToken: String
-        get() = getUserPrefs(oid).token!!
+    var userToken
+        get() = userTokenInternal!!
+        set(token) {
+            userTokenInternal = token
+        }
+    var userTokenInternal: String?
+        get() = getUserPrefs(oid).token
         set(token) {
             val oid = oid
             val userPrefs = getUserPrefs(oid)

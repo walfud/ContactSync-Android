@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ContactSync-Android</string>
     <string name="main_sync">sync</string>
+    <string name="main_finish">Success</string>
 </resources>

@@ -172,7 +172,7 @@
           "description": null,
           "fields": [
             {
-              "name": "sync",
+              "name": "upload",
               "description": null,
               "args": [
                 {
@@ -209,8 +209,8 @@
                 }
               ],
               "type": {
-                "kind": "OBJECT",
-                "name": "SyncOutputType",
+                "kind": "SCALAR",
+                "name": "Boolean",
                 "ofType": null
               },
               "isDeprecated": false,
@@ -288,33 +288,6 @@
             }
           ],
           "interfaces": null,
-          "enumValues": null,
-          "possibleTypes": null
-        },
-        {
-          "kind": "OBJECT",
-          "name": "SyncOutputType",
-          "description": null,
-          "fields": [
-            {
-              "name": "contacts",
-              "description": null,
-              "args": [],
-              "type": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "OBJECT",
-                  "name": "ContactType",
-                  "ofType": null
-                }
-              },
-              "isDeprecated": false,
-              "deprecationReason": null
-            }
-          ],
-          "inputFields": null,
-          "interfaces": [],
           "enumValues": null,
           "possibleTypes": null
         },

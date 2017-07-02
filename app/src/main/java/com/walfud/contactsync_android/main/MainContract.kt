@@ -12,12 +12,9 @@ class MainContract {
 
         fun error(err: String)
 
-        class ViewContactData {
-
-            var name: String? = null
-            var phoneList: List<String>? = null
-            var status: Int = 0
-
+        data class ViewContactData(var name: String,
+                                   var phoneList: List<String>,
+                                   var status: Int = STATUS_DEFAULT) {
             companion object {
                 val STATUS_DEFAULT = 0
                 val STATUS_LOCAL_ONLY = 1
@@ -31,6 +28,8 @@ class MainContract {
         fun onLogin(oid: String, accessToken: String, refreshToken: String)
         fun onRefresh()
         fun onSync()
+        fun onDownload()
+        fun onUpload()
     }
 
 }

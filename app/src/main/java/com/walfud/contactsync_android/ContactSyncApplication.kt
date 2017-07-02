@@ -9,7 +9,7 @@ import io.realm.RealmConfiguration
  * Created by walfud on 2017/4/20.
  */
 
-val appContext = lazy { ContactSyncApplication.appContext }
+val appContext = lazy { ContactSyncApplication.appContext }.value
 
 class ContactSyncApplication : Application() {
 

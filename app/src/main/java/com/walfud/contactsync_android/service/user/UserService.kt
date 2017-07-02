@@ -9,7 +9,7 @@ import com.walfud.contactsync_android.service.prefs.PrefsService
 
 object UserService {
     val isLogin: Boolean
-        get() = !TextUtils.isEmpty(token)
+        get() = !TextUtils.isEmpty(PrefsService.userTokenInternal)
 
     fun changeUser(id: String) {
         PrefsService.oid = id
