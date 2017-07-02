@@ -1,0 +1,9 @@
+query ContactQuery($token: String!) {
+  contacts(token: $token) {
+      id
+      name
+      phones
+      modify_time
+      is_deleted
+    }
+}

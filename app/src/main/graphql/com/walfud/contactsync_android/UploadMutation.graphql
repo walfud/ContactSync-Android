@@ -1,0 +1,3 @@
+mutation UploadMutation($token: String!, $contacts: [ContactInputType]!) {
+  upload(token: $token, contacts: $contacts)
+}
